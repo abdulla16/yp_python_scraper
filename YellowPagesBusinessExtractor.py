@@ -20,7 +20,7 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 		print parameters
 		moreResults = True
 		
-		page = 4
+		page = 1
 		businesses = {}
 		while(moreResults):
 			time.sleep(1)
