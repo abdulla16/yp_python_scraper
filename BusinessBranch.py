@@ -55,7 +55,7 @@ class BusinessBranch:
 	
 	@phones.setter
 	def phones(self, phones):
-		self.phones = phones
+		self.__phones = phones
 	
 	@property
 	def details(self):

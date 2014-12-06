@@ -9,3 +9,9 @@ extractor = YellowPagesBusinessExtractor(scrape, DataManager(scraperwiki.sqlite.
 businesses = extractor.extractAndSaveBusinesses('Tuscon, AZ', 'cupcakes')
 
 
+#results = scraperwiki.sqlite.select("* from branch")
+#for result in results:
+#    for key in result:
+#        print key,
+#        print " ",
+#        print result[key]

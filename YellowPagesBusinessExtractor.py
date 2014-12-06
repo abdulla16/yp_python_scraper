@@ -20,7 +20,7 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 		print parameters
 		moreResults = True
 		
-		page = 1
+		page = 4
 		businesses = {}
 		while(moreResults):
 			time.sleep(1)
@@ -41,9 +41,9 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 						businessBranch = BusinessBranch()
 						businessBranch.streetAddress = self.__extractItem(searchResult, 'streetAddress')
 						businessBranch.addressLocality = self.__extractItem(searchResult, 'addressLocality')
-						businessBranch.setAddressRegion = self.__extractItem(searchResult, 'addressRegion')
-						businessBranch.setPostalCode = self.__extractItem(searchResult, 'postalCode')
-						businessBranch.setPhones = self.__extractPhones(searchResult)
+						businessBranch.addressRegion = self.__extractItem(searchResult, 'addressRegion')
+						businessBranch.postalCode = self.__extractItem(searchResult, 'postalCode')
+						businessBranch.phones = self.__extractPhones(searchResult)
 						
 						branchId = searchResult.get("data-ypid")
 						businessBranch.branchId = branchId
@@ -102,9 +102,9 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 									value += child.text
 								for valueChild in child.iterdescendants():
 									value += etree.tostring(valueChild)
-									if(len(value) > 0 and not(prop.lower().find('hours') != -1 and \
-									value.lower().find('do you know the hours for this business?') != -1)):
-										details[prop] = value
+								if(len(value) > 0 and not(prop.lower().find('hours') != -1 and \
+								value.lower().find('do you know the hours for this business?') != -1)):
+									details[prop] = value
 								break
 					
 					i += 1
