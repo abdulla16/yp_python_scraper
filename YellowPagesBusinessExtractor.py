@@ -24,45 +24,47 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 		businesses = {}
 		while(moreResults):
 			time.sleep(1)
-			
-			html = self.__scraper(YellowPagesBusinessExtractor.__baseUrl + "/search?" + parameters + "&page=" + str(page))
-			root = lxml.html.fromstring(html)
-			
-			moreResults = False;
-			organicResults = root.cssselect("div.organic")
-			
-			if(len(organicResults) > 0):
-				moreResults = True
-				for searchResult in organicResults[0].cssselect("div.result"):
-					name = self.__extractItem(searchResult, 'name')
-					print "Extracting business: ",
-					print name,
-					print "..."
-					businessBranch = BusinessBranch()
-					businessBranch.streetAddress = self.__extractItem(searchResult, 'streetAddress')
-					businessBranch.addressLocality = self.__extractItem(searchResult, 'addressLocality')
-					businessBranch.setAddressRegion = self.__extractItem(searchResult, 'addressRegion')
-					businessBranch.setPostalCode = self.__extractItem(searchResult, 'postalCode')
-					businessBranch.setPhones = self.__extractPhones(searchResult)
-					
-					branchId = searchResult.get("data-ypid")
-					businessBranch.branchId = branchId
-					
-					url = self.__extractDetailsURL(searchResult)
-						
-					if(len(url) > 0):
-						self.__extractDetails(businessBranch, url)
-					
-					if(name in businesses):
-						businesses[name].addBranch(businessBranch)
-					else:
-						business = Business()
-						business.name = name
-						business.addBranch(businessBranch)
-						businesses[name] = business
-					
-					self.__dataManager.saveBusiness(business)
+			try:
+				html = self.__scraper(YellowPagesBusinessExtractor.__baseUrl + "/search?" + parameters + "&page=" + str(page))
+				root = lxml.html.fromstring(html)
 				
+				moreResults = False;
+				organicResults = root.cssselect("div.organic")
+				
+				if(len(organicResults) > 0):
+					moreResults = True
+					for searchResult in organicResults[0].cssselect("div.result"):
+						name = self.__extractItem(searchResult, 'name')
+						print "Extracting business: ",
+						print name,
+						print "..."
+						businessBranch = BusinessBranch()
+						businessBranch.streetAddress = self.__extractItem(searchResult, 'streetAddress')
+						businessBranch.addressLocality = self.__extractItem(searchResult, 'addressLocality')
+						businessBranch.setAddressRegion = self.__extractItem(searchResult, 'addressRegion')
+						businessBranch.setPostalCode = self.__extractItem(searchResult, 'postalCode')
+						businessBranch.setPhones = self.__extractPhones(searchResult)
+						
+						branchId = searchResult.get("data-ypid")
+						businessBranch.branchId = branchId
+						
+						url = self.__extractDetailsURL(searchResult)
+							
+						if(len(url) > 0):
+							self.__extractDetails(businessBranch, url)
+						
+						if(name in businesses):
+							businesses[name].addBranch(businessBranch)
+						else:
+							business = Business()
+							business.name = name
+							business.addBranch(businessBranch)
+							businesses[name] = business
+						
+						self.__dataManager.saveBusiness(business)
+			except:
+				#TODO: log error
+				print "Unexpected error"
 			page += 1
 		return businesses
 	
@@ -70,42 +72,45 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 		print "Extracting details: ",
 		print detailsURL,
 		print "..."
-		html = self.__scraper(YellowPagesBusinessExtractor.__baseUrl + detailsURL);
-		root = lxml.html.fromstring(html)
-			
-		dl = root.cssselect("dl")
-		
 		details = {}
-		if(len(dl) > 0):
-			dl = dl[0]
-			children = list(dl)
-			i = 0
-			while(i <  len(children)):
-				child = children[i]
-				#The dt element contains the property description (e.g., hours)
-				if(child.tag == 'dt'):
-					
-					prop = child.text
-					prop = prop.strip()
-					prop = prop.strip(":")
-					
-					#The dd element contains the value (e.g., Mon-Sun 9am - 5pm)
-					#We need to skip the other elements
-					while(i < len(children) - 1):
-						i += 1
-						child = children[i]
-						if(child.tag == 'dd'):
-							value = ""
-							if(child.text != None):
-								value += child.text
-							for valueChild in child.iterdescendants():
-								value += etree.tostring(valueChild)
-								if(len(value) > 0 and not(prop.lower().find('hours') != -1 and \
-								value.lower().find('do you know the hours for this business?') != -1)):
-									details[prop] = value
-							break
+		try:
+			html = self.__scraper(YellowPagesBusinessExtractor.__baseUrl + detailsURL);
+			root = lxml.html.fromstring(html)
 				
-				i += 1
+			dl = root.cssselect("dl")
+			if(len(dl) > 0):
+				dl = dl[0]
+				children = list(dl)
+				i = 0
+				while(i <  len(children)):
+					child = children[i]
+					#The dt element contains the property description (e.g., hours)
+					if(child.tag == 'dt'):
+						
+						prop = child.text
+						prop = prop.strip()
+						prop = prop.strip(":")
+						
+						#The dd element contains the value (e.g., Mon-Sun 9am - 5pm)
+						#We need to skip the other elements
+						while(i < len(children) - 1):
+							i += 1
+							child = children[i]
+							if(child.tag == 'dd'):
+								value = ""
+								if(child.text != None):
+									value += child.text
+								for valueChild in child.iterdescendants():
+									value += etree.tostring(valueChild)
+									if(len(value) > 0 and not(prop.lower().find('hours') != -1 and \
+									value.lower().find('do you know the hours for this business?') != -1)):
+										details[prop] = value
+								break
+					
+					i += 1
+		except:
+			#TODO: log error
+			print "Unexpected error"
 		branch.details = details
 	
 	def __extractDetailsURL(self, searchResult):
