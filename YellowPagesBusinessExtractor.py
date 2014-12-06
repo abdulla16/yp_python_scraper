@@ -100,12 +100,14 @@ class YellowPagesBusinessExtractor(BusinessExtractorInterface):
 								value = ""
 								if(child.text != None):
 									value += child.text
-								for valueChild in child.iterdescendants():
-									value += etree.tostring(valueChild)
+								else:
+									for valueChild in child.iterchildren():
+										value += etree.tostring(valueChild)
 								if(len(value) > 0 and not(prop.lower().find('hours') != -1 and \
 								value.lower().find('do you know the hours for this business?') != -1)):
 									details[prop] = value
 								break
+							
 					
 					i += 1
 		except:
