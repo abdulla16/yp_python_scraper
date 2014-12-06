@@ -3,7 +3,7 @@ import datetime
 import re
 import os
 
-def _connect(dbname = 'scraperwiki.sqlite'):
+def _connect(dbname = 'data.sqlite'):
   'Initialize the database (again). This is mainly for testing'
   global dt
   dt = DumpTruck(dbname = dbname,  adapt_and_convert = False)
